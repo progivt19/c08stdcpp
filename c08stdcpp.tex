@@ -1,0 +1,137 @@
+%!TEX program = xelatex
+\documentclass{article}
+\usepackage[a5paper,hmargin=17mm,tmargin=15mm,bmargin=25mm]{geometry}
+
+\usepackage{ifxetex}
+\ifxetex
+ \usepackage{fontspec}
+ \setmainfont[Scale=1.1]{Arno Pro}
+ \setmonofont[Scale=.92]{Consolas}
+ \usepackage{unicode-math}              %% пакет для загрузки шрифтов математического режима 
+ \setmathfont{[latinmodern-math.otf]}
+ \setmathfont[range=\mathit/{latin,Latin}]{Arno Pro Italic}
+ \setmathfont[range=up]{Arno Pro}
+ \setmathfont[range=\mathup/{latin,Latin}]{Arno Pro}
+\else
+ \usepackage[utf8]{inputenc}
+\fi
+\usepackage[russian]{babel}
+\usepackage{enumitem, graphicx, minted, microtype}
+\usepackage[dvipsnames]{xcolor}
+
+\newcommand{\textex}[1]{\texttt{\color{ForestGreen}#1}}
+\usemintedstyle{vs}
+
+\begin{document}
+\noindent
+\textbf{Лабораторная работа 8}\\
+{\Large \textbf{Файловые потоки и контейнеры STL}}\\
+\strut\hfill\smash{\includegraphics[scale=0.2]{logo.png}}
+
+Цель этой лабораторной работы~--- познакомиться с некоторыми объектами стандартной библиотеки C++.
+
+Некоторые задания в этой работе требуют ввода матриц. В ходе написания решения вы будете несколько раз запускать программу для проверки. Если одно число еще можно повводить несколько раз, то повторно вводить $3\times4$ матрицу утомительно. В таких случаях логично один раз записать данные в текстовый файл, а потом заставить программу читать из файла. Как организовать ввод из файла и вывод в файл? 
+
+В стандартной библиотеке Си++ предусмотрены объекты, представляющие текстовые потоки для ввода \texttt{ifstream} и вывода \texttt{ofstream}. Они объявляются в заголовочном файле \texttt{fstream}. Они должны быть связаны с файлом на диске. Это можно сделать при создании объекта при помощи конструктора. Конструктор — это специальная функция для создания объекта и настройки его внутреннего состояния, возможно из некоторых начальных данных, передаваемых как параметры. При этом имя функции совпадает с именем класса создаваемого объекта. Такое определение имеет вид
+\trivlist
+\item
+  \strut\quad а) \texttt{{\color[rgb]{0.17,0.57,0.69}класс} имяобъекта = {\color[rgb]{0.17,0.57,0.69}класс}({\color[rgb]{0.64,0.08,0.08}параметрыконструктора});}
+\item 
+  или 
+\item
+  \strut\quad б) \texttt{{\color[rgb]{0.17,0.57,0.69}класс} имяобъекта({\color[rgb]{0.64,0.08,0.08}параметрыконструктора});}
+\endtrivlist
+Создадим объекты \texttt{in} и \texttt{out} согласно варианту б), представляющие файлы \texttt{input.txt} и \texttt{output.txt} для чтения и записи, соответственно. Введем число из первого файла и запишем строку, содержащую запись этого числа, в выходной файл. Как видно, работа с файловыми потоками не отличается от работы с \texttt{cin}/\texttt{cout}. Хорошая практика~--- закрывать файлы, как только они перестали быть вам нужны.
+\begin{minted}{cpp}
+#include <fstream>
+using namespace std;
+int main() {
+  ifstream in("input.txt");
+  ofstream out("output.txt");
+  in >> n;
+  in.close();
+  out << "Hi " << n " times!\n";
+  out.close();
+  return 0;
+}
+\end{minted}
+
+При работе с файлами иногда бывает нужно считывать заранее неизвестное количество данных, пока файл не закончится. Потоковый объект <<не узнает>>, что файл закончился, пока не попробует прочитать дальше конца файла. Ваша программа может проверить это, приводя переменную типа \texttt{ifstream} к логическому типу: \texttt{false}означает, что файл не в порядке, в частности, закончился. Таким образом, если известно, что в файле \texttt{input.txt} записаны целые числа, но неизвестно заранее, сколько их, то узнать их количество можно так:
+
+\begin{minted}{cpp}
+#include <fstream>
+#include <iostream>
+int main() {
+  std::ifstream in;
+  int a, count = 0;
+  in.open("input.txt");
+  in >> a;
+  while(in) {
+    count++;
+    in >> a;
+  }
+  in.close();
+  std::cout << count << "\n";
+  return 0;
+}
+\end{minted}
+
+
+
+
+
+
+\newpage
+
+
+
+
+
+
+\begin{center}
+\textbf{ОБЩИЕ ЗАДАНИЯ}
+\end{center}
+
+\sloppy
+\begin{enumerate}
+\item
+Дан текстовый файл \texttt{input.txt}, выведите строку наибольшей длины в этом файле в выходной файл \texttt{longest.txt}.
+\item
+Дан файл \texttt{input.txt}, содержащий целые числа по одному в строке. Выберите наибольшее из них, принадлежащее интервалу $[a, b]$. Целочисленные концы интервала $a$, $b$ вводятся со стандартного устройства ввода.
+\item
+Дан файл \texttt{input.txt}, содержащий целые числа по одному в строке. Выведите только те из них, что не меньше последнего. Использовать векторы.
+\item
+Дан текстовый файл \texttt{input.txt}, содержащий целочисленную матрицу размера $n\times m$, записанную в следующем виде. В первой строке файла через пробел записаны два целых числа $n$ и $m$, число строк и столбцов в матрице. В каждой из последующих $n$ строк записаны по $m$ целых чисел, элементы матрицы. Выведите на стандартное устройство вывода максимальные элементы каждой строки поочередно, каждый в отдельной строке.
+\item
+Даны текстовые файлы \texttt{a.txt} и \texttt{b.txt}, содержащие две матрицы $A$ и $B$, соответственно, записанные как в предыдущем пункте, причем число столбцов в $A$ совпадает с числом строк в $B$. Выведите в файл \texttt{ab.txt} матрицу их произведения $AB$, в том же формате. Использовать векторы.
+\end{enumerate}
+
+
+
+
+
+
+
+\newpage
+
+\bigskip\sloppy
+
+\noindent\centerline{\textbf{ИНДИВИДУАЛЬНЫЕ ЗАДАНИЯ}}
+
+
+\begin{enumerate}[label={}, leftmargin=0pt, itemindent=0pt]
+
+\item
+
+\begin{enumerate}[label=\arabic{enumi}.\arabic*.] % ------- #1 -------
+\item
+Продолжение следует.
+
+\end{enumerate}
+
+\end{enumerate}
+
+
+
+
+\end{document}
